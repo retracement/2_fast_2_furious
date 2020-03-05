@@ -102,6 +102,11 @@ USE [2Fast2Furious];
 GO
 
 
+/***************************************WARNING**********************************/
+/* You'll need to SWITCH BACK to SESSION 1 and RERUN the loop before continuing */
+/********************************************************************************/
+
+
 -- Run again using the new default of READ_COMMITTED_SNAPSHOT
 USE [2Fast2Furious]
 GO
@@ -122,6 +127,7 @@ BEGIN
 END
 SELECT @ConsistentResults AS SuccessfulPriorRuns
 SELECT * FROM @Cars
+
 
 
 -- Finally let's repeat under SNAPSHOT
@@ -159,9 +165,7 @@ USE [2Fast2Furious];
 GO
 
 
--- Switch back to session 1
--- and stop the while loop if still running
--- or reconnect session
+-- Switch back to session 1 and stop the while loop if still running
 
 
 
@@ -183,7 +187,7 @@ SET LOCK_TIMEOUT 10
 -- and DELETE any records with an ID of 1
 BEGIN TRAN
     INSERT INTO t1 VALUES ('2');
-    DELETE FROM t1 WHERE c1 = 1;
+    DELETE FROM t1 WHERE c1 = 1; --wait (block) on X lock
 COMMIT
 
 
@@ -191,11 +195,5 @@ COMMIT
 SELECT @@TRANCOUNT AS Trancount
 
 
--- Query table and skip over other
--- session locked records (if any)
-SELECT * FROM t1 WITH (READPAST);
-
--- Errm!
-
-
 -- Switch back to session 1
+--fin.

@@ -36,8 +36,8 @@ SET STATISTICS TIME OFF
 
 
 
+-- Run again and look at statistics io
 -- Display Estimated query plan
--- Run again and look at statistics io 
 SET STATISTICS IO ON
 SELECT batchid FROM table1 WHERE id = 50999
 SET STATISTICS IO OFF
@@ -46,6 +46,8 @@ SET STATISTICS IO OFF
 
 -- In SqlQueryStress run the following 
 -- 100 iterations, 10 threads
+
+-- Update a random rows in parallel
 UPDATE table1 SET batchid = batchid 
 WHERE id = (1+ ABS(CHECKSUM(NewId())) % 50998)
 -- 1000 updates took?
@@ -53,23 +55,33 @@ WHERE id = (1+ ABS(CHECKSUM(NewId())) % 50998)
 
 
 -- Lets create a clustered index to satisfy the query predicate
--- and included cCREATE CLUSTERED INDEX IX_table1_id ON table1 (id)olumns
-
+-- and included columns
+CREATE CLUSTERED INDEX IX_table1_id ON table1 (id)
 
 
 -- Run the update again
 -- How long does it take this time?
 
 
--- Display Estimated query plan again
--- Run again and look at statistics io 
+-- Run SELECT again and look at statistics io
+-- Display Estimated query plan
 SET STATISTICS IO ON
 SELECT batchid FROM table1 WHERE id = 50999
 SET STATISTICS IO OFF
 
 -- Better?
+-- If quicker, why?  
 
+-- Presenters Note 1:
 -- Bad indexing strategy and poorly written queries
 -- can substantially effect your data access patterns
+-- This about access patterns, data reads/writes, locking, 
+-- blocking, and even deadlocking.
+
+-- Presenters Note 2:
 -- A QUERY IS FAST ENOUGH IF IT ACCESSES THE MINIMUM
--- AMOUNT OF PAGES POSSIBLE IN ORDER TO SATISFY
+-- AMOUNT OF PAGES POSSIBLE IN ORDER TO SATISFY THE
+-- RESULT SET
+
+
+---TO ADD SORTS, JOINS, KEY COLUMNS/ INCLUDES

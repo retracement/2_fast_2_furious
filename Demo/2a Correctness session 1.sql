@@ -85,15 +85,17 @@ IF @@TRANCOUNT <> 0 ROLLBACK
 
 
 -- Create our table and insert a record
+IF OBJECT_ID('dbo.t1','U') IS NOT NULL DROP TABLE t1
 CREATE TABLE t1 (c1 INT)
 GO
 INSERT INTO t1 (c1) VALUES ('1');
+
 
 -- Start open ended transaction
 -- and update our record
 BEGIN TRAN
     UPDATE t1 SET c1 = 3 WHERE c1=1
-	
+
 
 -- Switch to session 2
 
@@ -106,6 +108,8 @@ SELECT * FROM t1
 -- Review the number of rows
 -- and their values :)
 
+-- Errm!
 
+-- Presenters Note:
 -- REMEMBER AS A DEVELOPER YOU ARE BALANCING
 -- CONCURRENCY AGAINST CORRECTNESS CONCERNS!

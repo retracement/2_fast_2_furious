@@ -65,6 +65,8 @@ ALTER DATABASE [2Fast2Furious] SET AUTO_CREATE_STATISTICS OFF;
 GO
 
 -- Allow the use of on-disk SNAPSHOT ISOLATION in the database
+-- this is used in one of the demos and is set to allow ahead
+-- of time for convenience
 ALTER DATABASE [2Fast2Furious] SET ALLOW_SNAPSHOT_ISOLATION ON
 GO
 
@@ -89,10 +91,11 @@ GO
 USE [2Fast2Furious]
 GO
 SET NOCOUNT ON
-CREATE TABLE table1 (id INT, batchid INT)
+CREATE TABLE table1 (id INT, batchid INT, inv INT)
+GO
 DECLARE @x INT = 1
 WHILE @x < 51000
 BEGIN
-	INSERT INTO table1 VALUES (@x,0)
+	INSERT INTO table1 VALUES (@x,0, ABS(50998-@x))
 	SET @x = @x+1
 END

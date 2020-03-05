@@ -30,8 +30,8 @@ limitations under the License.*/
 -- improvements to our database
 
 --------------------------------------------------------
--- In this example we will look at implementing temp  --
--- tables using efficient techniques                  --
+-- In this example we will look at techniques for     --
+-- efficiently implementing temp tables               --
 --------------------------------------------------------
 SET NOCOUNT ON
 USE [2Fast2Furious]
@@ -194,6 +194,8 @@ CREATE TYPE [dbo].[PersonTyp] AS TABLE(
 -- And lets use them (obviously they are 
 -- only available within batch scope
 
+
+
 -- Select Include Actual Execution Plan
 
 
@@ -209,18 +211,20 @@ BEGIN TRAN
 	INSERT INTO @PersonsTable1 VALUES (5,165,'Black')
 COMMIT
 
-INSERT INTO @PersonsTable2 SELECT * FROM @PersonsTable1 
+INSERT INTO @PersonsTable2 SELECT * FROM @PersonsTable1 --Query 6
 	WHERE PersonID > 3
 	
-SELECT * FROM @PersonsTable1 WHERE PersonID = 2 
+SELECT * FROM @PersonsTable1 WHERE PersonID = 2  --Query 7
 
-SELECT * FROM @PersonsTable1 WHERE Height > 180
+SELECT * FROM @PersonsTable1 WHERE Height > 180 --Query 8
 
-SELECT * FROM @PersonsTable1 WHERE PersonID > 4 AND PersonID <6
-
+SELECT * FROM @PersonsTable1 WHERE PersonID > 4 AND PersonID <6 --Query 9
 
 
 -- Now select the whole batch and 
--- review the Execution Plan for the 3 SELECT statements.
+-- review the Execution Plan for the 1 INSERT statement
+-- and 3 SELECT statements (queries 6, 7, 8, 9)
 -- When and why are there SCANS and SEEKS?
 -- Understand the context of IMOLTP indexing
+
+-- fin.

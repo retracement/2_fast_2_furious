@@ -37,14 +37,15 @@ limitations under the License.*/
 
 
 -- One record has been updated in the table
--- so on-disk read committed should block......
--- query all table records under read committed
+-- so on-disk read committed would block......
+-- query all table records under read committed for IM table
 SET NOCOUNT ON
 USE [2Fast2Furious]
 GO
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED
 SELECT * FROM [dbo].[ArrestsIM] ORDER BY id
--- Check out id 6 that is being updated in an open ended transaction
+-- Review id 6 that is being updated in an open ended transaction
+-- i.e. we still have charges
 
 -- lets repeat under serializable
 SET NOCOUNT ON
@@ -61,30 +62,11 @@ access tables that are not memory optimized in RepeatableRead or Serializable is
 
 
 -- So lets attempt to create Native Compilation Stored Procedure
+-- to do the same thing
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED
 USE [2Fast2Furious]
 GO
 
-CREATE PROCEDURE dbo.QueryArrestsIM
-	WITH NATIVE_COMPILATION,
-	SCHEMABINDING,
-	EXECUTE AS OWNER
-AS
-	BEGIN ATOMIC WITH -- Create tran if no open or create savepoint
-		(TRANSACTION ISOLATION LEVEL = SERIALIZABLE,
-		LANGUAGE = N'british' -- language required
-		)
-		BEGIN
-			SELECT id, Arrest_Date, Charges, Details FROM [dbo].[ArrestsIM]
-				ORDER BY id
-		END
-	END
-GO
-
--- Note the error :)
-
-
--- Try again
 CREATE PROCEDURE dbo.QueryArrestsIM
 	WITH NATIVE_COMPILATION,
 	SCHEMABINDING,
@@ -105,10 +87,7 @@ GO
 -- Execute Native Compilation Stored Procedure
 EXEC dbo.QueryArrestsIM
 
--- Did SERIALIZABLE for In-Memory have to wait?
-
-
--- Switch back to session 1
+-- Did SERIALIZABLE for In-Memory have to wait or fail?
 
 
 --fin

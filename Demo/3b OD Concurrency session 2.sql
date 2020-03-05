@@ -38,7 +38,6 @@ limitations under the License.*/
 USE [2Fast2Furious]
 GO
 SET NOCOUNT ON
-
 EXEC sp_lock
 -- Once escalation occurs, skip the switch back
 
@@ -47,6 +46,8 @@ EXEC sp_lock
 
 
 -- lets now try querying the table
+USE [2Fast2Furious]
+GO
 SELECT TOP (1) * FROM table1
 
 
