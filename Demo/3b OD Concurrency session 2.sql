@@ -39,13 +39,14 @@ USE [2Fast2Furious]
 GO
 SET NOCOUNT ON
 EXEC sp_lock
--- Once escalation occurs, skip the switch back
+-- When escalation occurs, don't switch back and continue with this script
 
 
 -- Switch to session 1 (these will be repeated until we escalate)
 
 
--- lets now try querying the table
+-- lets now try querying top record of the table
+-- what will be the outcome?
 USE [2Fast2Furious]
 GO
 SELECT TOP (1) * FROM table1

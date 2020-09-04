@@ -62,6 +62,8 @@ CREATE CLUSTERED INDEX ix_t_mytable1 ON #MyTable1 (id)
 SELECT * from #MyTable1 WHERE id = 25000
 
 
+-- But we can probably go one step further
+
 
 ---------------------------------------------------------
 -- In this example we will look at implementing IMOLTP --
@@ -95,6 +97,67 @@ EXEC(@createdb)
 GO
 
 
+---------------------------------------------------------------
+-- In this example we will look at implementing IMOLTP types --
+---------------------------------------------------------------
+-- We will look at them as very easy and efficient replacement
+-- to on-disk temp tables
+
+-- First define our In-Memory table type
+USE [2Fast2Furious]
+GO
+CREATE TYPE [dbo].[PersonTyp] AS TABLE( 
+  [PersonID] [INT] NOT NULL,    
+  [Height] [SMALLINT] NOT NULL, 
+  [Hair] [VARCHAR](10) NOT NULL,  
+  INDEX [IX_PersonID] HASH ([PersonID]) WITH ( BUCKET_COUNT = 8),  
+  INDEX [IX_Height]  NONCLUSTERED ([Height])
+)  WITH ( MEMORY_OPTIMIZED = ON) --note durability not supported in table types  
+
+
+
+-- Declare In-Memory temp table variables!
+-- And lets use them (obviously they are 
+-- only available within batch scope
+
+
+
+-- Select Include Actual Execution Plan
+
+
+
+DECLARE @PersonsTable1 [PersonTyp]
+DECLARE @PersonsTable2 [PersonTyp]
+
+BEGIN TRAN
+	INSERT INTO @PersonsTable1 VALUES (1,200,'None')
+	INSERT INTO @PersonsTable1 VALUES (2,172,'Black')
+	INSERT INTO @PersonsTable1 VALUES (3,180,'Blonde')
+	INSERT INTO @PersonsTable1 VALUES (4,175,'Brown')
+	INSERT INTO @PersonsTable1 VALUES (5,165,'Black')
+COMMIT
+
+INSERT INTO @PersonsTable2 SELECT * FROM @PersonsTable1 --Query 6
+	WHERE PersonID > 3
+	
+SELECT * FROM @PersonsTable1 WHERE PersonID = 2  --Query 7
+
+SELECT * FROM @PersonsTable1 WHERE Height > 180 --Query 8
+
+SELECT * FROM @PersonsTable1 WHERE PersonID > 4 AND PersonID <6 --Query 9
+
+
+-- Now select the whole batch and 
+-- review the Execution Plan for the 1 INSERT statement
+-- and 3 SELECT statements (queries 6, 7, 8, 9)
+-- When and why are there SCANS and SEEKS?
+-- Understand the context of IMOLTP indexing
+
+
+
+----------------------------------------------------------------
+-- In this example we will look at implementing IMOLTP tables --
+----------------------------------------------------------------
 -- Create In-Memory table
 USE [2Fast2Furious]
 GO
@@ -110,7 +173,6 @@ CREATE TABLE ArrestsIM
 -- Presenters note: In-Memory table durability is not
 -- related to delayed durability! (in means durability of IM table)
 GO
-
 
 
 -- SQLQueryStress execute transaction under
@@ -169,62 +231,5 @@ EXEC dbo.InsertArrestsIM
 -- Was it any quicker?
 -- We might have cheated slightly -do you know where?
 
-
-
----------------------------------------------------------------
--- In this example we will look at implementing IMOLTP types --
----------------------------------------------------------------
--- We will look at them as very easy and efficient replacement
--- to on-disk temp tables
-
--- First define our In-Memory table type
-USE [2Fast2Furious]
-GO
-CREATE TYPE [dbo].[PersonTyp] AS TABLE( 
-  [PersonID] [INT] NOT NULL,    
-  [Height] [SMALLINT] NOT NULL, 
-  [Hair] [VARCHAR](10) NOT NULL,  
-  INDEX [IX_PersonID] HASH ([PersonID]) WITH ( BUCKET_COUNT = 8),  
-  INDEX [IX_Height]  NONCLUSTERED ([Height])
-)  WITH ( MEMORY_OPTIMIZED = ON) --note durability not supported in table types  
-
-
-
--- Declare In-Memory temp table variables!
--- And lets use them (obviously they are 
--- only available within batch scope
-
-
-
--- Select Include Actual Execution Plan
-
-
-
-DECLARE @PersonsTable1 [PersonTyp]
-DECLARE @PersonsTable2 [PersonTyp]
-
-BEGIN TRAN
-	INSERT INTO @PersonsTable1 VALUES (1,200,'None')
-	INSERT INTO @PersonsTable1 VALUES (2,172,'Black')
-	INSERT INTO @PersonsTable1 VALUES (3,180,'Blonde')
-	INSERT INTO @PersonsTable1 VALUES (4,175,'Brown')
-	INSERT INTO @PersonsTable1 VALUES (5,165,'Black')
-COMMIT
-
-INSERT INTO @PersonsTable2 SELECT * FROM @PersonsTable1 --Query 6
-	WHERE PersonID > 3
-	
-SELECT * FROM @PersonsTable1 WHERE PersonID = 2  --Query 7
-
-SELECT * FROM @PersonsTable1 WHERE Height > 180 --Query 8
-
-SELECT * FROM @PersonsTable1 WHERE PersonID > 4 AND PersonID <6 --Query 9
-
-
--- Now select the whole batch and 
--- review the Execution Plan for the 1 INSERT statement
--- and 3 SELECT statements (queries 6, 7, 8, 9)
--- When and why are there SCANS and SEEKS?
--- Understand the context of IMOLTP indexing
 
 -- fin.

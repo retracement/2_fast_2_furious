@@ -152,10 +152,6 @@ BEGIN
 END
 
 
--- set isolation level back to read committed
-SET TRANSACTION ISOLATION LEVEL READ COMMITTED
-
-
 -- Let's transition back to READ COMMITTED default
 USE MASTER
 GO
@@ -165,7 +161,12 @@ USE [2Fast2Furious];
 GO
 
 
--- Switch back to session 1 and stop the while loop if still running
+-- set isolation level back to read committed
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED
+
+
+
+-- Switch back to session 1 (stop the while loop *if* still running)
 
 
 
