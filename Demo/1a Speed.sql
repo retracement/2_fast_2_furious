@@ -27,7 +27,7 @@ limitations under the License.*/
 -- In this example we will see if a query is "fast" enough --
 -------------------------------------------------------------
 -- Execute the query (we are returning a single record)
--- Is it fast enough?
+-- Is it fast enough? (note the execution time)
 USE [2Fast2Furious]
 GO
 SET STATISTICS TIME ON
@@ -35,15 +35,16 @@ SELECT id, batchid FROM table1 WHERE id = 50999
 SET STATISTICS TIME OFF
 
 
-
--- Run again and look at statistics io
--- Display Estimated query plan
+-- Include actual execution plan
+-- Run again
+	-- Look at the query cost on the query plan
+	-- Look at statistics io
 SET STATISTICS IO ON
-SELECT batchid FROM table1 WHERE id = 50999
+SELECT id, batchid FROM table1 WHERE id = 50999
 SET STATISTICS IO OFF
 
 
-
+-- Lets do updates using same access pattern
 -- In SqlQueryStress run the following 
 -- 100 iterations, 10 threads
 
@@ -51,7 +52,8 @@ SET STATISTICS IO OFF
 UPDATE table1 SET batchid = batchid 
 WHERE id = (1+ ABS(CHECKSUM(NewId())) % 50998)
 -- 1000 updates took?
--- The same problem searching for your data also exists for updates
+-- The same access pattern searching for your data also exists for updates
+-- You can see this if you look at the execution plan
 
 
 -- Lets create a clustered index to satisfy the query predicate
@@ -76,7 +78,7 @@ SET STATISTICS IO OFF
 -- Bad indexing strategy and poorly written queries
 -- can substantially effect your data access patterns
 -- This about access patterns, data reads/writes, locking, 
--- blocking, and even deadlocking.
+-- blocking, and even deadlocking - ALL exacerbated by concurrency.
 
 -- Presenters Note 2:
 -- A QUERY IS FAST ENOUGH IF IT ACCESSES THE MINIMUM
@@ -84,4 +86,7 @@ SET STATISTICS IO OFF
 -- RESULT SET
 
 
+
+
+--- /*IGNORE FOR NOW OUT OF SCOPE IN DEMO*/
 ---TO ADD SORTS, JOINS, KEY COLUMNS/ INCLUDES

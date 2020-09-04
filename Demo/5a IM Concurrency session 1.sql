@@ -35,13 +35,13 @@ limitations under the License.*/
 -----------------------------------------------------------------------
 -- We will see how IMOLTP handles explicit transactions
 
-
--- Open a transaction and update a record
+-- Rollback open transactions
 SET NOCOUNT ON
 USE [2Fast2Furious]
 GO
 IF @@TRANCOUNT <> 0 ROLLBACK
 
+-- Open a transaction and update a record
 -- Attempt to update a record under transaction
 BEGIN TRAN
 	UPDATE [dbo].[ArrestsIM] SET charges = 0
